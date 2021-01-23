@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
@@ -20,28 +19,24 @@ namespace NupkgManager
             return uri.LocalPath;
         }
 
-        private string preReleaseDateFormat = "ddMMyyyy";
+        private string preReleaseDateFormat = "yyyyMMdd";
 
         Process commandPrompt;
-        string nugetExe = GetAssemblyLocalPathFrom(typeof(NupkgManagerPackage))
-            .Substring(0, GetAssemblyLocalPathFrom(typeof(NupkgManagerPackage))
-            .LastIndexOf("\\") + 1).Replace("\\", "/") + "nuget.exe";
+
+        string nugetExe = GetAssemblyLocalPathFrom(typeof(NupkgManagerPackage)).Substring(0, GetAssemblyLocalPathFrom(typeof(NupkgManagerPackage)).LastIndexOf("\\") + 1).Replace("\\", "/") + "nuget.exe";
         string userProfile = Environment.ExpandEnvironmentVariables(@"%USERPROFILE%\source\repos\");
+
         private StringBuilder outputBuilder;
-        System.Timers.Timer cmdBuildTimer = new System.Timers.Timer(2000);
-        System.Timers.Timer cmdPushTimer = new System.Timers.Timer(5000);
+
         ProgressDialogForm progressDialogForm;
 
         public MainPage()
         {
             InitializeComponent();
-            progressDialogForm = new ProgressDialogForm("Searching ...");
-            commandPromptOutputTextBox.ReadOnly = true;
 
-            cmdBuildTimer.Elapsed += CmdBuildTimer_Elapsed;
-            cmdBuildTimer.AutoReset = false;
-            cmdPushTimer.Elapsed += CmdPushTimer_Elapsed;
-            cmdPushTimer.AutoReset = false;
+            progressDialogForm = new ProgressDialogForm("Searching ...");
+
+            commandPromptOutputTextBox.ReadOnly = true;
 
             if (Properties.Settings.Default.DefaultSearchFolder == "")
             {
@@ -185,51 +180,42 @@ namespace NupkgManager
             EnableButton(deletePackagesButton, itemCount);
         }
 
-        private void buildPackagesButton_Click(object sender, EventArgs e)
+        private async void buildPackagesButton_Click(object sender, EventArgs e)
         {
-            BuildPackages();
+            progressDialogForm.UpdateMessage("Building ...");
+            progressDialogForm.Show(this);
+
+            _ = Task.Run(() =>
+            {
+                BuildPackages();
+
+                progressDialogForm.Invoke((MethodInvoker)delegate
+                {
+                    progressDialogForm.Hide();
+                });
+            });
         }
 
         private void pushPackagesButton_Click(object sender, EventArgs e)
         {
-            PushPackages();
+            progressDialogForm.UpdateMessage("Pushing ...");
+            progressDialogForm.Show(this);
+
+            _ = Task.Run(() =>
+            {
+                PushPackages();
+
+                progressDialogForm.Invoke((MethodInvoker)delegate
+                {
+                    progressDialogForm.Hide();
+                });
+            });
         }
 
         private void deletePackagesButton_Click(object sender, EventArgs e)
         {
             DeletePushedPackages();
         }
-
-        //private void CommandPromptBuild_OutputUpdated(object sender, EventArgs<string> e)
-        //{
-        //    cmdBuildTimer.Stop();
-        //    cmdBuildTimer.Start();
-
-        //    if (outputBuilder == null)
-        //        outputBuilder = new StringBuilder();
-        //        outputBuilder.AppendLine(e.Data);
-        //        WriteTextSafe(outputBuilder.ToString());
-        //}
-
-        //private void CommandPromptPush_OutputUpdated(object sender, EventArgs<string> eventArgs)
-        //{
-        //    cmdPushTimer.Stop();
-        //    cmdPushTimer.Start();
-
-        //    if (outputBuilder == null)
-        //        outputBuilder = new StringBuilder();
-        //    outputBuilder.AppendLine(eventArgs.Data);
-        //    try
-        //    {
-        //        WriteTextSafe(outputBuilder.ToString());
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        MessageBox.Show("An error occured while outputting command prompt: " + e, "Console Output Error",
-        //                MessageBoxButtons.OK, MessageBoxIcon.Error);
-        //    }
-            
-        //}
 
         private delegate void SafeCallDelegate(string text);
 
@@ -378,56 +364,36 @@ namespace NupkgManager
 
         public void BuildPackages()
         {
-            progressDialogForm.UpdateMessage("Building ...");
-            progressDialogForm.Show(this);
-            
             foreach (CheckedListBoxItem file in nuspecSearchResults.CheckedItems)
             {
                 PackagesToBuild.Add(file.Tag);
             }
 
-            BuildNextPackage();
-        }
-
-        public async void BuildNextPackage()
-        {
-            if (!PackagesToBuild.Any())
+            foreach (string path in PackagesToBuild)
             {
-                Task finishedBuildingTask = Task.Factory.StartNew(() =>
-                {
-                    FinishedBuilding();
-                });
+                IncrementVersionNumber(path);
 
-                await finishedBuildingTask;
-                return;
+                string projectRoot = path.Substring(0, path.LastIndexOf("\\obj")).Replace("\\", "/");
+                string projectName = projectRoot.Substring(projectRoot.LastIndexOf('/') + 1);
+                string csprojPath = $"{projectRoot}/{projectName}.csproj";
+                string packagePath = $"{projectRoot}/bin/debug";
+
+                this.commandPrompt = new Process();
+
+                ProcessStartInfo startInfo = new ProcessStartInfo();
+
+                startInfo.UseShellExecute = false;
+                startInfo.RedirectStandardOutput = true;
+                startInfo.CreateNoWindow = true;
+                startInfo.FileName = "cmd.exe";
+                startInfo.Arguments = $"/C dotnet pack \"{csprojPath}\" --configuration debug --output \"{packagePath}\"";
+                startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+
+                this.commandPrompt.StartInfo = startInfo;
+
+                this.commandPrompt.Start();
+                this.commandPrompt.WaitForExit();
             }
-
-            var path = PackagesToBuild.First();
-            PackagesToBuild.Remove(path);
-
-            IncrementVersionNumber(path);
-
-            string projectRoot = path.Substring(0, path.LastIndexOf("\\obj")).Replace("\\", "/");
-            string projectName = projectRoot.Substring(projectRoot.LastIndexOf('/') + 1);
-            string csprojPath = $"{projectRoot}/{projectName}.csproj";
-            string packagePath = $"{projectRoot}/bin/debug";
-
-            this.commandPrompt = new Process();
-
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-
-            startInfo.UseShellExecute = false;
-            startInfo.RedirectStandardOutput = true;
-            startInfo.CreateNoWindow = true;
-            startInfo.FileName = "cmd.exe";
-            startInfo.Arguments = $"/C dotnet pack \"{csprojPath}\" --configuration debug --output \"{packagePath}\"";
-            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
-
-            this.commandPrompt.StartInfo = startInfo;
-
-            this.commandPrompt.Start();
-
-            //commandPrompt.OutputUpdated += CommandPromptBuild_OutputUpdated;
         }
 
         public void IncrementVersionNumber(string dirToNuspecFile)
@@ -448,7 +414,7 @@ namespace NupkgManager
 
                 XmlNode projectConfigruationPropertyGroup = xmldoc.SelectSingleNode("/Project/PropertyGroup[@Label=\"ProjectConfiguration\"]");
 
-                string[] _versionSegments = _sourceVersion.Split('.');
+                string[] _versionSegments = _sourceVersion.Substring(0, _sourceVersion.IndexOf("-")).Split('.');
 
                 int _major = int.Parse(_versionSegments[0]);
                 int _minor = int.Parse(_versionSegments[1]);
@@ -477,7 +443,7 @@ namespace NupkgManager
                 {
                     if (_preReleaseSeparatorIndex != -1)
                     {
-                        string[] _preReleaseSegments = _sourceVersion.Substring(+1).Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries); ;
+                        string[] _preReleaseSegments = _sourceVersion.Substring(_sourceVersion.IndexOf("-")).Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries); ;
 
                         if (_preReleaseSegments.Length == 0)
                         {
@@ -493,6 +459,10 @@ namespace NupkgManager
                         if (_currentDateStamp != _preReleaseDateStamp)
                         {
                             _preReleaseDateStamp = _currentDateStamp;
+                            _preReleaseIncrementor = 1;
+                        }
+                        else
+                        {
                             _preReleaseIncrementor++;
                         }
 
@@ -567,25 +537,28 @@ namespace NupkgManager
                 new MissingInfoDialog().Show();
                 pushNotCancelled = false;
             }
-            
-            
 
             if (pushNotCancelled)
             {
-                progressDialogForm.UpdateMessage("Pushing to Server ...");
-                progressDialogForm.Show(this);
                 foreach (CheckedListBoxItem file in nupkgSearchResults.CheckedItems)
                 {
-                    //commandPrompt = new CommandPrompt(true);
+                    string packagePathNoBackslash = file.Tag.Replace("\\", "/");
 
-                    //string packagePathNoBackslash = file.Tag.Replace("\\", "/");
-                    //string pushPackageUpdateCmd = $"\"{nugetExe}\" push \"{packagePathNoBackslash}\" {key} -Source {packageServer}";
+                    this.commandPrompt = new Process();
 
-                    //commandPrompt.ExecuteCommand(pushPackageUpdateCmd);
-                    //commandPrompt.ExecuteCommand(key);
-                    //commandPrompt.ExecuteCommand("");
+                    ProcessStartInfo startInfo = new ProcessStartInfo();
 
-                    //commandPrompt.OutputUpdated += CommandPromptPush_OutputUpdated;
+                    startInfo.UseShellExecute = false;
+                    startInfo.RedirectStandardOutput = true;
+                    startInfo.CreateNoWindow = true;
+                    startInfo.FileName = "cmd.exe";
+                    startInfo.Arguments = $"/C dotnet nuget push \"{packagePathNoBackslash}\" --api-key {key} --source {packageServer}";
+                    startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+
+                    this.commandPrompt.StartInfo = startInfo;
+
+                    this.commandPrompt.Start();
+                    this.commandPrompt.WaitForExit();
                 }
             }
         }
@@ -648,11 +621,6 @@ namespace NupkgManager
                     = preReleaseCheckbox.Checked
                     = false;
             }
-        }
-
-        private void CmdBuildTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            this.BuildNextPackage();
         }
     }
 }
