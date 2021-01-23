@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
 
 namespace NupkgManager
 {
@@ -18,6 +19,8 @@ namespace NupkgManager
             var uri = new Uri(codebase, UriKind.Absolute);
             return uri.LocalPath;
         }
+
+        private string preReleaseDateFormat = "ddMMyyyy";
 
         Process commandPrompt;
         string nugetExe = GetAssemblyLocalPathFrom(typeof(NupkgManagerPackage))
@@ -172,6 +175,7 @@ namespace NupkgManager
             EnableCheckBox(majorCheckBox, itemCount);
             EnableCheckBox(minorCheckBox, itemCount);
             EnableCheckBox(buildNumberCheckBox, itemCount);
+            EnableCheckBox(preReleaseCheckbox, itemCount);
         }
 
         private void nupkgSearchResults_ItemCheck(object sender, ItemCheckEventArgs e)
@@ -358,6 +362,8 @@ namespace NupkgManager
                     = minorCheckBox.Checked
                     = buildNumberCheckBox.Enabled
                     = buildNumberCheckBox.Checked
+                    = preReleaseCheckbox.Enabled
+                    = preReleaseCheckbox.Checked
                     = majorVersionTo0ToolStripMenuItem.Checked
                     = majorVersionTo0ToolStripMenuItem.Enabled
                     = minorVersionTo0ToolStripMenuItem.Checked
@@ -401,8 +407,10 @@ namespace NupkgManager
 
             IncrementVersionNumber(path);
 
-            string fileNoExt = path.Substring(0, path.LastIndexOf(".") + 1).Replace("\\", "/");
-            string outputDir = fileNoExt.Substring(0, fileNoExt.LastIndexOf("/") + 1) + "bin/Release";
+            string projectRoot = path.Substring(0, path.LastIndexOf("\\obj")).Replace("\\", "/");
+            string projectName = projectRoot.Substring(projectRoot.LastIndexOf('/') + 1);
+            string csprojPath = $"{projectRoot}/{projectName}.csproj";
+            string packagePath = $"{projectRoot}/bin/debug";
 
             this.commandPrompt = new Process();
 
@@ -410,8 +418,10 @@ namespace NupkgManager
 
             startInfo.UseShellExecute = false;
             startInfo.RedirectStandardOutput = true;
+            startInfo.CreateNoWindow = true;
             startInfo.FileName = "cmd.exe";
-            startInfo.Arguments = $"/C \"{nugetExe}\" pack \"{fileNoExt}csproj\" -Build -Prop Configuration=Release -OutputDirectory \"{outputDir}\" -IncludeReferencedProjects";
+            startInfo.Arguments = $"/C dotnet pack \"{csprojPath}\" --configuration debug --output \"{packagePath}\"";
+            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
 
             this.commandPrompt.StartInfo = startInfo;
 
@@ -422,77 +432,113 @@ namespace NupkgManager
 
         public void IncrementVersionNumber(string dirToNuspecFile)
         {
-            string fileNoExt = dirToNuspecFile.Substring(0, dirToNuspecFile.LastIndexOf(".")).Replace("\\", "/");
-            string assemblyInfoDir = fileNoExt.Substring(0, fileNoExt.LastIndexOf("/") + 1) + "Properties/";
-            string assemblyInfoFile = File.ReadAllText(assemblyInfoDir + "AssemblyInfo.cs");
-            int majorNumber;
-            int minorNumber;
-            int buildNumber;
-            string betaInfo;
-            string versionNumberReplaced;
-
             try
             {
-                Regex rx = new Regex("AssemblyInformationalVersion");
-                Match match = rx.Match(assemblyInfoFile);
+                string projectRoot = dirToNuspecFile.Substring(0, dirToNuspecFile.LastIndexOf("\\obj")).Replace("\\", "/");
+                string projectName = projectRoot.Substring(projectRoot.LastIndexOf('/') + 1);
+                string csprojPath = $"{projectRoot}/{projectName}.csproj";
 
-                if (match.Value == "AssemblyInformationalVersion")
+                string _sourceVersion = Path.GetFileNameWithoutExtension(dirToNuspecFile.Substring(dirToNuspecFile.LastIndexOf(projectName) + 1 + projectName.Length));
+
+                XmlDocument xmldoc = new XmlDocument();
+                xmldoc.Load(csprojPath);
+
+                XmlNamespaceManager xmlNamespaceManager = new XmlNamespaceManager(xmldoc.NameTable);
+                xmlNamespaceManager.AddNamespace("x", "http://schemas.microsoft.com/developer/msbuild/2003");
+
+                XmlNode projectConfigruationPropertyGroup = xmldoc.SelectSingleNode("/Project/PropertyGroup[@Label=\"ProjectConfiguration\"]");
+
+                string[] _versionSegments = _sourceVersion.Split('.');
+
+                int _major = int.Parse(_versionSegments[0]);
+                int _minor = int.Parse(_versionSegments[1]);
+                int _build = int.Parse(_versionSegments[2]);
+
+                if (majorCheckBox.Checked)
                 {
-                    Regex rx1 = new Regex(@"^[^//].*AssemblyInformationalVersion.\""(\d{0,2})\.(\d{0,2})\.(\d{0,2})(.{0,128})\""", RegexOptions.Multiline | RegexOptions.ECMAScript);
-                    Match match1 = rx1.Match(assemblyInfoFile);
+                    _major++;
+                }
 
-                    majorNumber = int.Parse(match1.Groups[1].Value);
-                    minorNumber = int.Parse(match1.Groups[2].Value);
-                    buildNumber = int.Parse(match1.Groups[3].Value);
-                    betaInfo = match1.Groups[4].Value;
+                if (minorCheckBox.Checked)
+                {
+                    _minor++;
+                }
 
-                    if (majorCheckBox.Checked) majorNumber++;
-                    if (minorCheckBox.Checked) minorNumber++;
-                    if (buildNumberCheckBox.Checked) buildNumber++;
-                    if (majorVersionTo0ToolStripMenuItem.Checked) majorNumber = 0;
-                    if (minorVersionTo0ToolStripMenuItem.Checked) minorNumber = 0;
-                    if (buildNumberTo0ToolStripMenuItem.Checked) buildNumber = 0;
+                if (buildNumberCheckBox.Checked)
+                {
+                    _build++;
+                }
 
-                    versionNumberReplaced = assemblyInfoFile.Replace($@"AssemblyInformationalVersion(""{match1.Groups[1].Value}.{match1.Groups[2].Value}.{match1.Groups[3].Value}{match1.Groups[4].Value}""", $@"AssemblyInformationalVersion(""{majorNumber}.{minorNumber}.{buildNumber}{betaInfo}""");
-                    //versionNumberReplaced = Regex.Replace(assemblyInfoFile, rx1.ToString(), $@"[assembly: AssemblyInformationalVersion(""{majorNumber}.{minorNumber}.{buildNumber}{betaInfo}""");
-                    File.WriteAllText(assemblyInfoDir + "AssemblyInfo.cs", versionNumberReplaced);
+                string _newVersion = $"{_major}.{_minor}.{_build}";
+
+                int _preReleaseSeparatorIndex = _sourceVersion.IndexOf('-');
+
+                if (preReleaseCheckbox.Checked)
+                {
+                    if (_preReleaseSeparatorIndex != -1)
+                    {
+                        string[] _preReleaseSegments = _sourceVersion.Substring(+1).Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries); ;
+
+                        if (_preReleaseSegments.Length == 0)
+                        {
+                            throw new Exception("Invalid pre-release format.");
+                        }
+
+                        string _preReleaseKeyword = _preReleaseSegments[0];
+                        string _preReleaseDateStamp = _preReleaseSegments[1];
+                        int _preReleaseIncrementor = int.Parse(_preReleaseSegments[2]);
+
+                        string _currentDateStamp = DateTime.Now.Date.ToString(preReleaseDateFormat);
+
+                        if (_currentDateStamp != _preReleaseDateStamp)
+                        {
+                            _preReleaseDateStamp = _currentDateStamp;
+                            _preReleaseIncrementor++;
+                        }
+
+                        _newVersion = $"{_newVersion}-{_preReleaseKeyword}-{_preReleaseDateStamp}-{_preReleaseIncrementor}";
+                    }
+                    else
+                    {
+                        // New pre-release version.
+                        _newVersion = $"{_newVersion}-{DateTime.Now.Date.ToString(preReleaseDateFormat)}-1";
+                    }
+                }
+
+                XmlNode packageVersion = xmldoc.SelectSingleNode("/Project/PropertyGroup/Version");
+                packageVersion.InnerText = _newVersion;
+
+                XmlNode assemblyVersion = xmldoc.SelectSingleNode("/Project/PropertyGroup/AssemblyVersion");
+
+                if (assemblyVersion == null)
+                {
+                    XmlElement assemblyVersionElement = xmldoc.CreateElement("FileVersion");
+                    assemblyVersionElement.InnerText = _newVersion;
+                    projectConfigruationPropertyGroup.AppendChild(assemblyVersionElement);
                 }
                 else
                 {
-                    Regex rx2 = new Regex(@"\""(\d{0,2})\.(\d{0,2})\.(\d{0,2})(.{0,128})\""", RegexOptions.Multiline);
-                    Match match2 = rx2.Match(assemblyInfoFile);
-
-                    majorNumber = int.Parse(match2.Groups[1].Value);
-                    minorNumber = int.Parse(match2.Groups[2].Value);
-                    buildNumber = int.Parse(match2.Groups[3].Value.Replace("*","0"));
-                    betaInfo = match2.Groups[4].Value;
-
-                    if (String.IsNullOrEmpty(match2.Groups[3].Value)) buildNumber = 0;
-
-                    try
-                    {
-                        if (majorCheckBox.Checked) majorNumber++;
-                        if (minorCheckBox.Checked) minorNumber++;
-                        if (buildNumberCheckBox.Checked) buildNumber++;
-                    }
-                    catch (Exception e)
-                    {
-                        MessageBox.Show("Unrecognised version number in Assembly info: " + e, "Assembly Info Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                    
-                    if (majorVersionTo0ToolStripMenuItem.Checked) majorNumber = 0;
-                    if (minorVersionTo0ToolStripMenuItem.Checked) minorNumber = 0;
-                    if (buildNumberTo0ToolStripMenuItem.Checked) buildNumber = 0;
-
-                    versionNumberReplaced = Regex.Replace(assemblyInfoFile, rx2.ToString(), $@"""{majorNumber}.{minorNumber}.{buildNumber}{betaInfo}""");
-                    File.WriteAllText(assemblyInfoDir + "AssemblyInfo.cs", versionNumberReplaced);
+                    assemblyVersion.InnerText = _newVersion;
                 }
+
+                XmlNode fileVersion = xmldoc.SelectSingleNode("/Project/PropertyGroup/FileVersion");
+
+                if (fileVersion == null)
+                {
+                    XmlElement _elem = xmldoc.CreateElement("FileVersion");
+                    _elem.InnerText = _newVersion;
+                    projectConfigruationPropertyGroup.AppendChild(_elem);
+                }
+                else
+                {
+                    fileVersion.InnerText = _newVersion;
+                }
+
+                xmldoc.Save(csprojPath);
             }
             catch (Exception e)
             {
-                MessageBox.Show("An error occured while attempting to build: " + e, "Build Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("An error occured while attempting to build: " + e, "Build Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -599,6 +645,7 @@ namespace NupkgManager
                     = majorCheckBox.Checked
                     = minorCheckBox.Checked
                     = buildNumberCheckBox.Checked
+                    = preReleaseCheckbox.Checked
                     = false;
             }
         }
