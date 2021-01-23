@@ -56,7 +56,7 @@
         <Parent guid="guidCommandPackageCmdSet" id="MyMenuGroup" />
         <Icon guid="guidImages" id="bmpPic1" />
         <Strings>
-          <ButtonText>Nupkg Manager</ButtonText>
+          <ButtonText>Nuget Enhancement Suite</ButtonText>
         </Strings>
       </Button>
     </Buttons>

@@ -1,11 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="NupkgManagerVSIX.fe29bb07-d738-43f9-9c81-03b52bed99c2" Version="1.1.2" Language="en-US" Publisher="Broken Capo Development" />
-        <DisplayName>Nupkg Manager</DisplayName>
-        <Description xml:space="preserve">Easily build and push NuGet packages to nuget.org or custom repositories within Visual Studio. </Description>
+        <Identity Id="NupkgManagerVSIX.fe29bb07-d738-43f9-9c81-03b52bed99c2" Version="0.0.1" Language="en-US" Publisher="NSSure" />
+        <DisplayName>Nuget Enhancement Suite</DisplayName>
+        <Description xml:space="preserve">Allows quick building/publishing of nuget packages. Built from the "Nupkg Manager" extension.</Description>
+        <ReleaseNotes>Initial release</ReleaseNotes>
         <Icon>Resources\Icon.png</Icon>
         <PreviewImage>Resources\Preview.png</PreviewImage>
+        <Preview>true</Preview>
     </Metadata>
     <Installation>
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0, 17.0)" />

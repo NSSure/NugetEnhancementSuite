@@ -47,12 +47,12 @@
             this.showHideCmdOutputToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.packagesPathTextBox = new System.Windows.Forms.TextBox();
-            this.majorCheckBox = new System.Windows.Forms.CheckBox();
-            this.minorCheckBox = new System.Windows.Forms.CheckBox();
-            this.buildNumberCheckBox = new System.Windows.Forms.CheckBox();
             this.browseButton = new System.Windows.Forms.Button();
             this.commandPromptOutputTextBox = new System.Windows.Forms.TextBox();
             this.deletePackagesButton = new System.Windows.Forms.Button();
+            this.majorCheckBox = new System.Windows.Forms.CheckBox();
+            this.minorCheckBox = new System.Windows.Forms.CheckBox();
+            this.buildNumberCheckBox = new System.Windows.Forms.CheckBox();
             this.preReleaseCheckbox = new System.Windows.Forms.CheckBox();
             this.menuStrip1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -62,7 +62,7 @@
             // 
             this.pushPackagesButton.Dock = System.Windows.Forms.DockStyle.Top;
             this.pushPackagesButton.Enabled = false;
-            this.pushPackagesButton.Location = new System.Drawing.Point(4, 734);
+            this.pushPackagesButton.Location = new System.Drawing.Point(4, 731);
             this.pushPackagesButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pushPackagesButton.Name = "pushPackagesButton";
             this.pushPackagesButton.Size = new System.Drawing.Size(116, 35);
@@ -77,7 +77,7 @@
             this.tableLayoutPanel1.SetColumnSpan(this.nuspecSearchResults, 5);
             this.nuspecSearchResults.FormattingEnabled = true;
             this.nuspecSearchResults.HorizontalScrollbar = true;
-            this.nuspecSearchResults.Location = new System.Drawing.Point(4, 86);
+            this.nuspecSearchResults.Location = new System.Drawing.Point(4, 83);
             this.nuspecSearchResults.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.nuspecSearchResults.Name = "nuspecSearchResults";
             this.nuspecSearchResults.Size = new System.Drawing.Size(534, 303);
@@ -87,7 +87,7 @@
             // buildPackagesButton
             // 
             this.buildPackagesButton.Enabled = false;
-            this.buildPackagesButton.Location = new System.Drawing.Point(4, 399);
+            this.buildPackagesButton.Location = new System.Drawing.Point(4, 396);
             this.buildPackagesButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.buildPackagesButton.Name = "buildPackagesButton";
             this.buildPackagesButton.Size = new System.Drawing.Size(112, 35);
@@ -102,7 +102,7 @@
             this.tableLayoutPanel1.SetColumnSpan(this.nupkgSearchResults, 5);
             this.nupkgSearchResults.FormattingEnabled = true;
             this.nupkgSearchResults.HorizontalScrollbar = true;
-            this.nupkgSearchResults.Location = new System.Drawing.Point(4, 444);
+            this.nupkgSearchResults.Location = new System.Drawing.Point(4, 441);
             this.nupkgSearchResults.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.nupkgSearchResults.Name = "nupkgSearchResults";
             this.nupkgSearchResults.Size = new System.Drawing.Size(534, 280);
@@ -120,7 +120,7 @@
             this.viewToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1082, 36);
+            this.menuStrip1.Size = new System.Drawing.Size(1082, 33);
             this.menuStrip1.TabIndex = 8;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -133,7 +133,7 @@
             this.toolStripSeparator1,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(54, 30);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(54, 29);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // preferencesToolStripMenuItem
@@ -204,7 +204,7 @@
             this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.showHideCmdOutputToolStripMenuItem});
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
-            this.viewToolStripMenuItem.Size = new System.Drawing.Size(65, 30);
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(65, 29);
             this.viewToolStripMenuItem.Text = "View";
             // 
             // showHideCmdOutputToolStripMenuItem
@@ -255,56 +255,17 @@
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.packagesPathTextBox, 3);
             this.packagesPathTextBox.Enabled = false;
-            this.packagesPathTextBox.Location = new System.Drawing.Point(4, 41);
+            this.packagesPathTextBox.Location = new System.Drawing.Point(4, 38);
             this.packagesPathTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.packagesPathTextBox.Name = "packagesPathTextBox";
             this.packagesPathTextBox.Size = new System.Drawing.Size(319, 26);
             this.packagesPathTextBox.TabIndex = 4;
             // 
-            // majorCheckBox
-            // 
-            this.majorCheckBox.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.majorCheckBox.AutoSize = true;
-            this.majorCheckBox.Enabled = false;
-            this.majorCheckBox.Location = new System.Drawing.Point(128, 404);
-            this.majorCheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.majorCheckBox.Name = "majorCheckBox";
-            this.majorCheckBox.Size = new System.Drawing.Size(74, 24);
-            this.majorCheckBox.TabIndex = 10;
-            this.majorCheckBox.Text = "Major";
-            this.majorCheckBox.UseVisualStyleBackColor = true;
-            // 
-            // minorCheckBox
-            // 
-            this.minorCheckBox.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.minorCheckBox.AutoSize = true;
-            this.minorCheckBox.Enabled = false;
-            this.minorCheckBox.Location = new System.Drawing.Point(239, 404);
-            this.minorCheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.minorCheckBox.Name = "minorCheckBox";
-            this.minorCheckBox.Size = new System.Drawing.Size(74, 24);
-            this.minorCheckBox.TabIndex = 11;
-            this.minorCheckBox.Text = "Minor";
-            this.minorCheckBox.UseVisualStyleBackColor = true;
-            // 
-            // buildNumberCheckBox
-            // 
-            this.buildNumberCheckBox.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.buildNumberCheckBox.AutoSize = true;
-            this.buildNumberCheckBox.Enabled = false;
-            this.buildNumberCheckBox.Location = new System.Drawing.Point(333, 404);
-            this.buildNumberCheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.buildNumberCheckBox.Name = "buildNumberCheckBox";
-            this.buildNumberCheckBox.Size = new System.Drawing.Size(85, 24);
-            this.buildNumberCheckBox.TabIndex = 12;
-            this.buildNumberCheckBox.Text = "Build no.";
-            this.buildNumberCheckBox.UseVisualStyleBackColor = true;
-            // 
             // browseButton
             // 
             this.browseButton.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.tableLayoutPanel1.SetColumnSpan(this.browseButton, 2);
-            this.browseButton.Location = new System.Drawing.Point(434, 41);
+            this.browseButton.Location = new System.Drawing.Point(434, 38);
             this.browseButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.browseButton.Name = "browseButton";
             this.browseButton.Size = new System.Drawing.Size(112, 35);
@@ -319,7 +280,7 @@
             this.commandPromptOutputTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.commandPromptOutputTextBox.Font = new System.Drawing.Font("Consolas", 10F);
             this.commandPromptOutputTextBox.ForeColor = System.Drawing.Color.Lime;
-            this.commandPromptOutputTextBox.Location = new System.Drawing.Point(554, 41);
+            this.commandPromptOutputTextBox.Location = new System.Drawing.Point(554, 38);
             this.commandPromptOutputTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.commandPromptOutputTextBox.Multiline = true;
             this.commandPromptOutputTextBox.Name = "commandPromptOutputTextBox";
@@ -332,7 +293,7 @@
             // 
             this.deletePackagesButton.Dock = System.Windows.Forms.DockStyle.Top;
             this.deletePackagesButton.Enabled = false;
-            this.deletePackagesButton.Location = new System.Drawing.Point(426, 734);
+            this.deletePackagesButton.Location = new System.Drawing.Point(426, 731);
             this.deletePackagesButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.deletePackagesButton.Name = "deletePackagesButton";
             this.deletePackagesButton.Size = new System.Drawing.Size(120, 35);
@@ -341,12 +302,51 @@
             this.deletePackagesButton.UseVisualStyleBackColor = true;
             this.deletePackagesButton.Click += new System.EventHandler(this.deletePackagesButton_Click);
             // 
+            // majorCheckBox
+            // 
+            this.majorCheckBox.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.majorCheckBox.AutoSize = true;
+            this.majorCheckBox.Enabled = false;
+            this.majorCheckBox.Location = new System.Drawing.Point(128, 401);
+            this.majorCheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.majorCheckBox.Name = "majorCheckBox";
+            this.majorCheckBox.Size = new System.Drawing.Size(74, 24);
+            this.majorCheckBox.TabIndex = 10;
+            this.majorCheckBox.Text = "Major";
+            this.majorCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // minorCheckBox
+            // 
+            this.minorCheckBox.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.minorCheckBox.AutoSize = true;
+            this.minorCheckBox.Enabled = false;
+            this.minorCheckBox.Location = new System.Drawing.Point(239, 401);
+            this.minorCheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.minorCheckBox.Name = "minorCheckBox";
+            this.minorCheckBox.Size = new System.Drawing.Size(74, 24);
+            this.minorCheckBox.TabIndex = 11;
+            this.minorCheckBox.Text = "Minor";
+            this.minorCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // buildNumberCheckBox
+            // 
+            this.buildNumberCheckBox.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.buildNumberCheckBox.AutoSize = true;
+            this.buildNumberCheckBox.Enabled = false;
+            this.buildNumberCheckBox.Location = new System.Drawing.Point(333, 401);
+            this.buildNumberCheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.buildNumberCheckBox.Name = "buildNumberCheckBox";
+            this.buildNumberCheckBox.Size = new System.Drawing.Size(85, 24);
+            this.buildNumberCheckBox.TabIndex = 12;
+            this.buildNumberCheckBox.Text = "Build no.";
+            this.buildNumberCheckBox.UseVisualStyleBackColor = true;
+            // 
             // preReleaseCheckbox
             // 
             this.preReleaseCheckbox.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.preReleaseCheckbox.AutoSize = true;
             this.preReleaseCheckbox.Enabled = false;
-            this.preReleaseCheckbox.Location = new System.Drawing.Point(426, 404);
+            this.preReleaseCheckbox.Location = new System.Drawing.Point(426, 401);
             this.preReleaseCheckbox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.preReleaseCheckbox.Name = "preReleaseCheckbox";
             this.preReleaseCheckbox.Size = new System.Drawing.Size(116, 24);

@@ -5,10 +5,10 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Nupkg Manager")]
-[assembly: AssemblyDescription("Easily build and push NuGet packages to nuget.org or custom repositories within Visual Studio.")]
+[assembly: AssemblyTitle("Nuget Enhancement Suite")]
+[assembly: AssemblyDescription("Allows quick building/publishing of nuget packages. Built from the \"Nupkg Manager\" extension.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Broken Capo Development")]
+[assembly: AssemblyCompany("NSSure")]
 [assembly: AssemblyProduct("NupkgManager")]
 [assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
@@ -29,5 +29,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.1.2.0")]
-[assembly: AssemblyFileVersion("1.1.2.0")]
+[assembly: AssemblyVersion("0.0.1")]
+[assembly: AssemblyFileVersion("0.0.1")]
