@@ -1,12 +1,10 @@
-﻿using IIHS.Tools;
-using Microsoft.VisualBasic;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -21,7 +19,7 @@ namespace NupkgManager
             return uri.LocalPath;
         }
 
-        CommandPrompt commandPrompt;
+        Process commandPrompt;
         string nugetExe = GetAssemblyLocalPathFrom(typeof(NupkgManagerPackage))
             .Substring(0, GetAssemblyLocalPathFrom(typeof(NupkgManagerPackage))
             .LastIndexOf("\\") + 1).Replace("\\", "/") + "nuget.exe";
@@ -198,36 +196,36 @@ namespace NupkgManager
             DeletePushedPackages();
         }
 
-        private void CommandPromptBuild_OutputUpdated(object sender, EventArgs<string> e)
-        {
-            cmdBuildTimer.Stop();
-            cmdBuildTimer.Start();
+        //private void CommandPromptBuild_OutputUpdated(object sender, EventArgs<string> e)
+        //{
+        //    cmdBuildTimer.Stop();
+        //    cmdBuildTimer.Start();
 
-            if (outputBuilder == null)
-                outputBuilder = new StringBuilder();
-                outputBuilder.AppendLine(e.Data);
-                WriteTextSafe(outputBuilder.ToString());
-        }
+        //    if (outputBuilder == null)
+        //        outputBuilder = new StringBuilder();
+        //        outputBuilder.AppendLine(e.Data);
+        //        WriteTextSafe(outputBuilder.ToString());
+        //}
 
-        private void CommandPromptPush_OutputUpdated(object sender, EventArgs<string> eventArgs)
-        {
-            cmdPushTimer.Stop();
-            cmdPushTimer.Start();
+        //private void CommandPromptPush_OutputUpdated(object sender, EventArgs<string> eventArgs)
+        //{
+        //    cmdPushTimer.Stop();
+        //    cmdPushTimer.Start();
 
-            if (outputBuilder == null)
-                outputBuilder = new StringBuilder();
-            outputBuilder.AppendLine(eventArgs.Data);
-            try
-            {
-                WriteTextSafe(outputBuilder.ToString());
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show("An error occured while outputting command prompt: " + e, "Console Output Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+        //    if (outputBuilder == null)
+        //        outputBuilder = new StringBuilder();
+        //    outputBuilder.AppendLine(eventArgs.Data);
+        //    try
+        //    {
+        //        WriteTextSafe(outputBuilder.ToString());
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        MessageBox.Show("An error occured while outputting command prompt: " + e, "Console Output Error",
+        //                MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //    }
             
-        }
+        //}
 
         private delegate void SafeCallDelegate(string text);
 
@@ -402,18 +400,29 @@ namespace NupkgManager
             PackagesToBuild.Remove(path);
 
             IncrementVersionNumber(path);
-            commandPrompt = new CommandPrompt(true);
 
             string fileNoExt = path.Substring(0, path.LastIndexOf(".") + 1).Replace("\\", "/");
             string outputDir = fileNoExt.Substring(0, fileNoExt.LastIndexOf("/") + 1) + "bin/Release";
-            string buildPackageCmd = $"\"{nugetExe}\" pack \"{fileNoExt}csproj\" -Build -Prop Configuration=Release -OutputDirectory \"{outputDir}\" -IncludeReferencedProjects";
-            commandPrompt.ExecuteCommand(buildPackageCmd);
-            commandPrompt.OutputUpdated += CommandPromptBuild_OutputUpdated;
+
+            this.commandPrompt = new Process();
+
+            ProcessStartInfo startInfo = new ProcessStartInfo();
+
+            startInfo.UseShellExecute = false;
+            startInfo.RedirectStandardOutput = true;
+            startInfo.FileName = "cmd.exe";
+            startInfo.Arguments = $"/C \"{nugetExe}\" pack \"{fileNoExt}csproj\" -Build -Prop Configuration=Release -OutputDirectory \"{outputDir}\" -IncludeReferencedProjects";
+
+            this.commandPrompt.StartInfo = startInfo;
+
+            this.commandPrompt.Start();
+
+            //commandPrompt.OutputUpdated += CommandPromptBuild_OutputUpdated;
         }
 
         public void IncrementVersionNumber(string dirToNuspecFile)
         {
-            string fileNoExt = dirToNuspecFile.Substring(0, dirToNuspecFile.LastIndexOf(".") + 1).Replace("\\", "/");
+            string fileNoExt = dirToNuspecFile.Substring(0, dirToNuspecFile.LastIndexOf(".")).Replace("\\", "/");
             string assemblyInfoDir = fileNoExt.Substring(0, fileNoExt.LastIndexOf("/") + 1) + "Properties/";
             string assemblyInfoFile = File.ReadAllText(assemblyInfoDir + "AssemblyInfo.cs");
             int majorNumber;
@@ -521,16 +530,16 @@ namespace NupkgManager
                 progressDialogForm.Show(this);
                 foreach (CheckedListBoxItem file in nupkgSearchResults.CheckedItems)
                 {
-                    commandPrompt = new CommandPrompt(true);
+                    //commandPrompt = new CommandPrompt(true);
 
-                    string packagePathNoBackslash = file.Tag.Replace("\\", "/");
-                    string pushPackageUpdateCmd = $"\"{nugetExe}\" push \"{packagePathNoBackslash}\" {key} -Source {packageServer}";
+                    //string packagePathNoBackslash = file.Tag.Replace("\\", "/");
+                    //string pushPackageUpdateCmd = $"\"{nugetExe}\" push \"{packagePathNoBackslash}\" {key} -Source {packageServer}";
 
-                    commandPrompt.ExecuteCommand(pushPackageUpdateCmd);
-                    commandPrompt.ExecuteCommand(key);
-                    commandPrompt.ExecuteCommand("");
+                    //commandPrompt.ExecuteCommand(pushPackageUpdateCmd);
+                    //commandPrompt.ExecuteCommand(key);
+                    //commandPrompt.ExecuteCommand("");
 
-                    commandPrompt.OutputUpdated += CommandPromptPush_OutputUpdated;
+                    //commandPrompt.OutputUpdated += CommandPromptPush_OutputUpdated;
                 }
             }
         }
